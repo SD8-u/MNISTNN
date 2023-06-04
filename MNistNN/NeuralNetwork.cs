@@ -76,9 +76,18 @@ namespace MNistNN
         //Feed forward
         public void run()
         {
-            for(int x = 0; x < layers; x++)
+            for(int i = 0; i < layers - 1; i++)
             {
-
+                for(int x = 0; x < nodes[i + 1].Length; x++)
+                {
+                    double z = 0;
+                    for(int y = 0; y < nodes[i].Length; y++)
+                    {
+                        z += weights[i][x, y] * nodes[i][x];
+                    }
+                    z += bias[i + 1][x];
+                    nodes[i + 1][x] = sigmoid(z);
+                }
             }
         }
     }
