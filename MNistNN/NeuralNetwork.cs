@@ -11,21 +11,24 @@ namespace MNistNN
         //NN components for neurons
         private int layers;
         private List<double[,]> weights;
-        private List<double[]> nodes;
+        private List<double[]> activation;
         private List<double[]> bias;
+        private List<double[]> nodes;
 
         //Construct n-Layer Deep NN with random weights/bias
         public NeuralNetwork(int[] structure)
         {
             Random rand = new Random();
             weights = new List<double[,]>();
-            nodes = new List<double[]>();
+            activation = new List<double[]>();
             bias = new List<double[]>();
+            nodes = new List<double[]>();
             layers = structure.Length;
 
             //Node Bias initialisation
             foreach(int layerWidth in structure)
             {
+                activation.Add(new double[layerWidth]);
                 nodes.Add(new double[layerWidth]);
                 bias.Add(new double[layerWidth]);
             }
@@ -74,21 +77,55 @@ namespace MNistNN
         }
 
         //Feed forward
-        public void run()
+        public void Run()
         {
             for(int i = 0; i < layers - 1; i++)
             {
-                for(int x = 0; x < nodes[i + 1].Length; x++)
+                for(int x = 0; x < activation[i + 1].Length; x++)
                 {
                     double z = 0;
-                    for(int y = 0; y < nodes[i].Length; y++)
+                    for(int y = 0; y < activation[i].Length; y++)
                     {
-                        z += weights[i][x, y] * nodes[i][x];
+                        z += weights[i][x, y] * activation[i][x];
                     }
                     z += bias[i + 1][x];
-                    nodes[i + 1][x] = sigmoid(z);
+                    nodes[i + 1][x] = z;
+                    activation[i + 1][x] = sigmoid(z);
                 }
             }
+        }
+
+        //Backpropagate
+        public List<double[]> Backpropagate(double[] expected)
+        {
+            List<double[]> error = new List<double[]>();
+            foreach (double[] layer in activation)
+            {
+                error.Add(new double[layer.Length]);
+            }
+
+            //Compute errors in output
+            for(int x = 0; x < activation[layers - 1].Length; x++)
+            {
+                error[layers - 1][x] = (activation[layers - 1][x] - expected[x]) *
+                (activation[layers - 1][x] * (1 - activation[layers - 1][x]));
+            }
+
+            //Backpropagate errors, deriving partial derivatives of cost
+            for(int i = layers - 2; i > 0; i--)
+            {
+                for(int x = 0; x < activation[i].Length; x++)
+                {
+                    double sum = 0;
+                    for(int y = 0; y < activation[i + 1].Length; y++)
+                    {
+                        sum += weights[i][y, x] * error[i + 1][y] *
+                        (activation[i][x] * (1 - activation[i][x]));
+                    }
+                    error[i][x] = sum;
+                }
+            }
+            return error;
         }
     }
 }
