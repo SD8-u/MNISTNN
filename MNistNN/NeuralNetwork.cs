@@ -127,5 +127,10 @@ namespace MNistNN
             }
             return error;
         }
+
+        public void GradientDescent()
+        {
+
+        }
     }
 }
