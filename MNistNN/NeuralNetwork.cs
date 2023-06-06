@@ -79,14 +79,14 @@ namespace MNistNN
             {
                 for (int y = 0; y < 28; y++)
                 {
-                    if (image[x, y] == 0)
+                    if (image[x, y] == 255)
                     {
                         activation[0][(x + 1) * (y + 1) - 1] = 0;
                     }
                     else
                     {
                         activation[0][(x + 1) * (y + 1) - 1] =
-                        Convert.ToDouble(image[x, y]) / 255;
+                        (255 - Convert.ToDouble(image[x, y])) / 255;
                     }
                 }
             }

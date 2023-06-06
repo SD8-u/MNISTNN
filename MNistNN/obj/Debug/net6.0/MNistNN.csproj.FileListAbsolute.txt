@@ -1,0 +1,17 @@
+C:\Users\7sava\Desktop\Programs\Other\MNistNN\MNistNN\bin\Debug\net6.0\MNistNN.exe
+C:\Users\7sava\Desktop\Programs\Other\MNistNN\MNistNN\bin\Debug\net6.0\MNistNN.deps.json
+C:\Users\7sava\Desktop\Programs\Other\MNistNN\MNistNN\bin\Debug\net6.0\MNistNN.runtimeconfig.json
+C:\Users\7sava\Desktop\Programs\Other\MNistNN\MNistNN\bin\Debug\net6.0\MNistNN.dll
+C:\Users\7sava\Desktop\Programs\Other\MNistNN\MNistNN\bin\Debug\net6.0\MNistNN.pdb
+C:\Users\7sava\Desktop\Programs\Other\MNistNN\MNistNN\bin\Debug\net6.0\MNIST.IO.dll
+C:\Users\7sava\Desktop\Programs\Other\MNistNN\MNistNN\obj\Debug\net6.0\MNistNN.csproj.AssemblyReference.cache
+C:\Users\7sava\Desktop\Programs\Other\MNistNN\MNistNN\obj\Debug\net6.0\MNistNN.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\7sava\Desktop\Programs\Other\MNistNN\MNistNN\obj\Debug\net6.0\MNistNN.AssemblyInfoInputs.cache
+C:\Users\7sava\Desktop\Programs\Other\MNistNN\MNistNN\obj\Debug\net6.0\MNistNN.AssemblyInfo.cs
+C:\Users\7sava\Desktop\Programs\Other\MNistNN\MNistNN\obj\Debug\net6.0\MNistNN.csproj.CoreCompileInputs.cache
+C:\Users\7sava\Desktop\Programs\Other\MNistNN\MNistNN\obj\Debug\net6.0\MNistNN.csproj.CopyComplete
+C:\Users\7sava\Desktop\Programs\Other\MNistNN\MNistNN\obj\Debug\net6.0\MNistNN.dll
+C:\Users\7sava\Desktop\Programs\Other\MNistNN\MNistNN\obj\Debug\net6.0\refint\MNistNN.dll
+C:\Users\7sava\Desktop\Programs\Other\MNistNN\MNistNN\obj\Debug\net6.0\MNistNN.pdb
+C:\Users\7sava\Desktop\Programs\Other\MNistNN\MNistNN\obj\Debug\net6.0\MNistNN.genruntimeconfig.cache
+C:\Users\7sava\Desktop\Programs\Other\MNistNN\MNistNN\obj\Debug\net6.0\ref\MNistNN.dll
