@@ -57,7 +57,7 @@ namespace MNistNN
                 {
                     for(int i = 0; i < weights[x].GetLength(1); i++)
                     {
-                        weights[x][y, i] = rand.NextDouble() * rand.Next(10);
+                        weights[x][y, i] = rand.NextDouble();// * rand.Next(2);
                         if(rand.NextDouble() < 0.5)
                         {
                             weights[x][y, i] *= -1;
@@ -70,7 +70,7 @@ namespace MNistNN
         //Sigmoid - Activation function
         private double sigmoid(double z)
         {
-            return 1 / 1 + Math.Pow(Math.E, -z);
+            return 1 / (1 + Math.Pow(Math.E, z * -1));
         }
 
         public void SetInput(byte[,] image)
@@ -191,6 +191,14 @@ namespace MNistNN
                         weights[i][x, y] -= (errorWeight[i][x, y] / labels.Length);
                     }
                 }
+            }
+        }
+
+        public void Display(int n)
+        {
+            for(int x = 0; x < activation[n].Length; x++)
+            {
+                Console.WriteLine(activation[n][x]);
             }
         }
 

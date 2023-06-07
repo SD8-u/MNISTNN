@@ -10,10 +10,6 @@ List<byte[,]> images = new List<byte[,]>();
 byte[] labels = MNISTReader.ReadLabels(100);
 images = MNISTReader.ReadImages(100);
 
-for(int i = 0; i < 100; i++)
-{
-    Console.WriteLine(Convert.ToInt32(labels[i]));
-}
 
 network.GradientDescent(images, labels);
-
+network.Display(1);
