@@ -102,7 +102,7 @@ namespace MNistNN
                     double z = 0;
                     for(int y = 0; y < activation[i].Length; y++)
                     {
-                        z += weights[i][x, y] * activation[i][x];
+                        z += weights[i][x, y] * activation[i][y];
                     }
                     z += bias[i + 1][x];
                     activation[i + 1][x] = sigmoid(z);
@@ -145,11 +145,11 @@ namespace MNistNN
                     temp[x] = sum;
                     errorBias[i][x] += sum;
                 }
-                for(int x = 0; x < activation[i].Length; x++)
+                for(int x = 0; x < activation[i - 1].Length; x++)
                 {
                     for(int y = 0; y < activation[i].Length; y++)
                     {
-                        errorWeight[i][x, y] += temp[y] * activation[i][x];
+                        errorWeight[i - 1][y, x] += temp[y] * activation[i - 1][x];
                     }
                 }
             }
@@ -167,7 +167,7 @@ namespace MNistNN
                 Run();
 
                 expected = new double[labels.Length];
-                expected[Convert.ToInt32(labels[x]) - 1] = 1;
+                expected[Convert.ToInt32(labels[x])] = 1;
 
                 Backpropagate(expected, errorBias, errorWeight);
             }
