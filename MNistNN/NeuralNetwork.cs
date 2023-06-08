@@ -10,6 +10,7 @@ namespace MNistNN
     {
         //NN components for neurons
         private int layers;
+        private const double learnRate = 0.01;
         private List<double[,]> weights;
         private List<double[]> activation;
         private List<double[]> bias;
@@ -205,7 +206,8 @@ namespace MNistNN
             {
                 for(int y = 0; y < bias[x].Length; y++)
                 {
-                    bias[x][y] -= 0.1 * (errorBias[x][y] / labels.Length);
+                    bias[x][y] -= learnRate 
+                    * (errorBias[x][y] / labels.Length);
                 }
             }
 
@@ -216,26 +218,27 @@ namespace MNistNN
                 {
                     for(int y = 0; y < activation[i].Length; y++)
                     {
-                        weights[i][x, y] -= 0.1 * (errorWeight[i][x, y] / labels.Length);
+                        weights[i][x, y] -= learnRate * 
+                        (errorWeight[i][x, y] / labels.Length);
                     }
                 }
             }
         }
 
-        public void Display()
+        public double[] GetResult()
         {
             double max = 0;
             int value = 0;
             for(int x = 0; x < activation[layers - 1].Length; x++)
             {
-                Console.WriteLine(x + ": " + activation[layers - 1][x]);
                 if (activation[layers - 1][x] > max)
                 {
                     max = activation[layers - 1][x];
                     value = x;
                 }
             }
-            Console.WriteLine("NETWORK MAX: " + value + " Probability: " + max);
+            double[] result = { value, max };
+            return result;
         }
 
     }

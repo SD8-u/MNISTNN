@@ -1,46 +1,48 @@
 ﻿using MNistNN;
-// See https://aka.ms/new-console-template for more information
 
 Console.WriteLine("MNIST------NEURAL NETWORK-----------");
 
+//Construct Network
 int[] structure = { 784, 20, 20, 10 };
 NeuralNetwork network = new NeuralNetwork(structure);
-List<byte[,]> images = new List<byte[,]>();
 
+//Read Dataset
 byte[] labels = MNISTReader.ReadLabels(60000);
-images = MNISTReader.ReadImages(60000);
+List<byte[,]> images = MNISTReader.ReadImages(60000);
 
-for(int e = 0; e < 10; e++)
+//Perform Training
+int batchSize = 1;
+int trainSize = 50000;
+int testSize = 1000;
+int epochs = 20;
+
+for (int e = 0; e < epochs; e++)
 {
-    for (int i = 0; i < 50000; i += 10)
+    for (int i = 0; i < trainSize; i += batchSize)
     {
-        byte[] testLabels = new byte[10];
-        for (int x = i; x < i + 10; x++)
+        byte[] testLabels = new byte[batchSize];
+        for (int x = i; x < i + batchSize; x++)
         {
             testLabels[x - i] = labels[x];
         }
-        network.GradientDescent(images.GetRange(i, 10), testLabels);
-        if (i == 0) { Console.WriteLine("EPOCH: " + e); network.Display(); Console.WriteLine("ACTUAL: " + testLabels[9]); }
+        network.GradientDescent(images.GetRange(i, batchSize), testLabels);
+        if (i == trainSize - 1) 
+        { 
+            //Perform epoch test
+            Console.WriteLine("EPOCH: " + e);
+            double correct = 0;
+            for (int x = trainSize; x < trainSize + testSize; x++)
+            {
+                network.SetInput(images[x]);
+                network.Run();
+                if (network.GetResult()[0] == labels[x])
+                {
+                    correct++;
+                }
+            }
+            Console.WriteLine("ACCURACY: " + correct / testSize * 100 + "%");
+        }
     }
 }
 
-for(int x = 50000; x < 50010; x++)
-{
-    network.SetInput(images[x]);
-    network.Run();
-    network.Display();
-    Console.WriteLine("ACTUAL: " + labels[x]);
-}
-
-/*byte[,] im = new byte[28, 28];
-for(int x = 0; x < 28; x++)
-{
-    for(int y = 0; y < 28; y++)
-    {
-        im[x, y] = Convert.ToByte(255);
-    }
-}
-network.SetInput(im);
-network.Run();
-network.Display();*/
 
