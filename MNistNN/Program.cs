@@ -12,15 +12,15 @@ images = MNISTReader.ReadImages(60000);
 
 for(int e = 0; e < 10; e++)
 {
-    for (int i = 0; i < 50000; i += 1)
+    for (int i = 0; i < 50000; i += 10)
     {
-        byte[] testLabels = new byte[1];
-        for (int x = i; x < i + 1; x++)
+        byte[] testLabels = new byte[10];
+        for (int x = i; x < i + 10; x++)
         {
             testLabels[x - i] = labels[x];
         }
-        network.GradientDescent(images.GetRange(i, 1), testLabels);
-        if (i == 0) { Console.WriteLine("EPOCH: " + e); network.Display(); Console.WriteLine("ACTUAL: " + testLabels[0]); }
+        network.GradientDescent(images.GetRange(i, 10), testLabels);
+        if (i == 0) { Console.WriteLine("EPOCH: " + e); network.Display(); Console.WriteLine("ACTUAL: " + testLabels[9]); }
     }
 }
 

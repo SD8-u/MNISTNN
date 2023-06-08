@@ -79,6 +79,7 @@ namespace MNistNN
             {
                 for (int y = 0; y < 28; y++)
                 {
+                    //Data normalisation
                     if (image[x, y] == Convert.ToByte(255))
                     {
                         activation[0][(x + 1) * (y + 1) - 1] = 0;
@@ -120,15 +121,19 @@ namespace MNistNN
         //Backpropagate
         public void Backpropagate(double[] expected, List<double[]> errorBias, List<double[,]>errorWeight)
         {
+            List<double[]> errorBtmp = new List<double[]>();
 
-            double[] temp = new double[activation[layers - 1].Length];
+            foreach (double[] layer in activation)
+            {
+                errorBtmp.Add(new double[layer.Length]);
+            }
+
             //Compute errors in output for bias
             for(int x = 0; x < activation[layers - 1].Length; x++)
             {
-                temp[x] = (activation[layers - 1][x] - expected[x]) *
+                errorBtmp[layers - 1][x] = (activation[layers - 1][x] - expected[x]) *
                 (activation[layers - 1][x] * (1 - activation[layers - 1][x]));
-                errorBias[layers - 1][x] += temp[x];
-                //Console.WriteLine((activation[layers - 1][x] * (1 - activation[layers - 1][x])));
+                errorBias[layers - 1][x] += errorBtmp[layers - 1][x];
             }
 
             //Compute errors in output for weights
@@ -136,31 +141,31 @@ namespace MNistNN
             {
                 for(int y = 0; y < activation[layers - 1].Length; y++)
                 {
-                    errorWeight[layers - 2][y, x] += temp[y] * 
+                    errorWeight[layers - 2][y, x] += errorBtmp[layers - 1][y] * 
                     activation[layers - 2][x];
                 }
             }
 
-            //Backpropagate errors, deriving partial derivatives of cost
+            //Backpropagate errors, deriving partial derivatives of cost function
             for(int i = layers - 2; i > 0; i--)
             {
-                temp = new double[activation[i].Length];
                 for(int x = 0; x < activation[i].Length; x++)
                 {
                     double sum = 0;
                     for(int y = 0; y < activation[i + 1].Length; y++)
                     {
-                        sum += weights[i][y, x] * errorBias[i + 1][y] *
+                        sum += weights[i][y, x] * errorBtmp[i + 1][y] *
                         (activation[i][x] * (1 - activation[i][x]));
                     }
-                    temp[x] = sum;
+                    errorBtmp[i][x] = sum;
                     errorBias[i][x] += sum;
                 }
                 for(int x = 0; x < activation[i - 1].Length; x++)
                 {
                     for(int y = 0; y < activation[i].Length; y++)
                     {
-                        errorWeight[i - 1][y, x] += temp[y] * activation[i - 1][x];
+                        errorWeight[i - 1][y, x] += errorBtmp[i][y] * 
+                        activation[i - 1][x];
                     }
                 }
             }
@@ -188,7 +193,6 @@ namespace MNistNN
             {
                 SetInput(images[x]);
                 Run();
-                //Display();
 
                 expected = new double[10];
                 expected[Convert.ToInt32(labels[x])] = 1;
@@ -201,7 +205,7 @@ namespace MNistNN
             {
                 for(int y = 0; y < bias[x].Length; y++)
                 {
-                    bias[x][y] -= 0.01 * (errorBias[x][y] / labels.Length);
+                    bias[x][y] -= 0.1 * (errorBias[x][y] / labels.Length);
                 }
             }
 
@@ -212,8 +216,7 @@ namespace MNistNN
                 {
                     for(int y = 0; y < activation[i].Length; y++)
                     {
-
-                        weights[i][x, y] -= 0.01 * (errorWeight[i][x, y] / labels.Length);
+                        weights[i][x, y] -= 0.1 * (errorWeight[i][x, y] / labels.Length);
                     }
                 }
             }
