@@ -3,7 +3,7 @@
 Console.WriteLine("MNIST------NEURAL NETWORK-----------");
 
 //Construct Network
-int[] structure = { 784, 20, 20, 10 };
+int[] structure = { 784, 100, 10 };
 NeuralNetwork network = new NeuralNetwork(structure);
 
 //Read Dataset
@@ -13,7 +13,7 @@ List<byte[,]> images = MNISTReader.ReadImages(60000);
 //Perform Training
 int batchSize = 1;
 int trainSize = 50000;
-int testSize = 1000;
+int testSize = 10000;
 int epochs = 20;
 
 for (int e = 0; e < epochs; e++)
@@ -26,7 +26,7 @@ for (int e = 0; e < epochs; e++)
             testLabels[x - i] = labels[x];
         }
         network.GradientDescent(images.GetRange(i, batchSize), testLabels);
-        if (i == trainSize - 1) 
+        if (i >= trainSize - batchSize) 
         { 
             //Perform epoch test
             Console.WriteLine("EPOCH: " + e);

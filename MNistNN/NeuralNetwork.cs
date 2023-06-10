@@ -68,10 +68,19 @@ namespace MNistNN
             }
         }
 
-        //Sigmoid - Activation function
-        private double sigmoid(double z)
+        //Activation function
+        private double A(double z)
         {
+            return Math.Max(0, z);
             return 1 / (1 + Math.Pow(Math.E, z * -1));
+        }
+
+        //Derivative of activation function
+        private double dA(double a)
+        {
+            //return a * (1 - a);
+            if(a > 0) { return 1; }
+            return 0;
         }
 
         public void SetInput(byte[,] image)
@@ -114,7 +123,7 @@ namespace MNistNN
                         z += weights[i][x, y] * activation[i][y];
                     }
                     z += bias[i + 1][x];
-                    activation[i + 1][x] = sigmoid(z);
+                    activation[i + 1][x] = A(z);
                 }
             }
         }
@@ -133,7 +142,7 @@ namespace MNistNN
             for(int x = 0; x < activation[layers - 1].Length; x++)
             {
                 errorBtmp[layers - 1][x] = (activation[layers - 1][x] - expected[x]) *
-                (activation[layers - 1][x] * (1 - activation[layers - 1][x]));
+                dA(activation[layers - 1][x]);
                 errorBias[layers - 1][x] += errorBtmp[layers - 1][x];
             }
 
@@ -156,7 +165,7 @@ namespace MNistNN
                     for(int y = 0; y < activation[i + 1].Length; y++)
                     {
                         sum += weights[i][y, x] * errorBtmp[i + 1][y] *
-                        (activation[i][x] * (1 - activation[i][x]));
+                        dA(activation[i][x]);
                     }
                     errorBtmp[i][x] = sum;
                     errorBias[i][x] += sum;
