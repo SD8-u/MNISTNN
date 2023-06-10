@@ -4,7 +4,7 @@ Console.WriteLine("MNIST------NEURAL NETWORK-----------");
 
 //Construct Network
 int[] structure = { 784, 100, 10 };
-NeuralNetwork network = new NeuralNetwork(structure);
+DenseLayerNetwork network = new DenseLayerNetwork(structure);
 
 //Read Dataset
 byte[] labels = MNISTReader.ReadLabels(60000);

@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace MNistNN
 {
-    internal class NeuralNetwork
+    internal class DenseLayerNetwork
     {
         //NN components for neurons
         private int layers;
@@ -16,7 +16,7 @@ namespace MNistNN
         private List<double[]> bias;
 
         //Construct n-Layer Deep NN with random weights/bias
-        public NeuralNetwork(int[] structure)
+        public DenseLayerNetwork(int[] structure)
         {
             Random rand = new Random();
             weights = new List<double[,]>();
