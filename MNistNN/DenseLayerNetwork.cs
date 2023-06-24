@@ -14,6 +14,7 @@ namespace MNistNN
         private List<double[,]> weights;
         private List<double[]> activation;
         private List<double[]> bias;
+        private double[] inputError;
 
         //Construct n-Layer Deep NN with random weights/bias
         public DenseLayerNetwork(int[] structure)
@@ -179,6 +180,19 @@ namespace MNistNN
                     }
                 }
             }
+
+            //Computed for potential prior convolution layers
+            for (int x = 0; x < activation[0].Length; x++)
+            {
+                double sum = 0;
+                for (int y = 0; y < activation[1].Length; y++)
+                {
+                    sum += weights[0][y, x] * errorBtmp[1][y] *
+                    dA(activation[0][x]);
+                }
+                errorBtmp[0][x] = sum;
+                inputError[x] += sum;
+            }
         }
 
         //Perform weight/bias adjustment via gradient descent
@@ -187,6 +201,7 @@ namespace MNistNN
             double[] expected;
             List<double[]> errorBias = new List<double[]>();
             List<double[,]> errorWeight = new List<double[,]>();
+            inputError = new double[activation[0].Length];
 
             foreach (double[] layer in activation)
             {
@@ -232,6 +247,12 @@ namespace MNistNN
                     }
                 }
             }
+
+            //Average input errors
+            for(int x = 0; x < inputError.Length; x++)
+            {
+                inputError[x] /= labels.Length;
+            }
         }
 
         public double[] GetResult()
@@ -248,6 +269,11 @@ namespace MNistNN
             }
             double[] result = { value, max };
             return result;
+        }
+
+        public double[] GetInputError()
+        {
+            return inputError;
         }
 
     }

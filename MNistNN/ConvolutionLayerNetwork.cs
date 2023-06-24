@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -109,6 +110,41 @@ namespace MNistNN
             }
         }
 
+        //Backpropagation in convolutional layers
+        public void Backpropagate(double[] error)
+        {
+            for(int i = layers - 1; i > 0; i--)
+            {
+                //Convolutional layer
+                if (convPoolConfig[i - 1])
+                {
+                    //Compute weights in each kernel set
+                    for(int a = 0; a < kernels[i].GetLength(0); a++)
+                    {
+                        for(int b = 0; b < kernels[i].GetLength(1); b++)
+                        {
+                            for(int c = 0; c < kernels[i].GetLength(2); c++)
+                            {
+                                for(int d = 0; d < kernels[i].GetLength(3); d++)
+                                {
+                                    //Perform summation over output feature map
+                                    double sum = 0;
+                                    for(int e = 0; e < activation[i].GetLength(1); e++)
+                                    {
+                                        for(int f = 0; f < activation[i].GetLength(2); f++)
+                                        {
+                                            sum += activation[i - 1][b, e + c, d + f]; //* dActiv
+                                        }
+                                    }
+                                    kernels[i][a, b, c, d] -= sum; //*learnRate
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
         //Activation function
         private double A(double z)
         {
@@ -116,6 +152,7 @@ namespace MNistNN
             return 1 / (1 + Math.Pow(Math.E, z * -1));
         }
 
+        //Perform convolution of two matrices
         private double[,,] convolution(int a, int b, double[,,,] m1, double[,,] m2)
         {
             int k1 = (m1.GetLength(2) - m2.GetLength(1)) + 1;
@@ -141,6 +178,7 @@ namespace MNistNN
             return result;
         }
 
+        //Sum two matrices (activation param for propagation)
         private void sum(int a, int b, double[,,] m1, double[,,] m2, bool activ=false)
         {
             for(int x = 0; x < m1.GetLength(1); x++)
@@ -156,6 +194,7 @@ namespace MNistNN
             }
         }
 
+        //Initialise bias matrices with randomised values
         private void randomiseBias()
         {
             Random rand = new Random();
@@ -178,6 +217,7 @@ namespace MNistNN
             }
         }
 
+        //Initialise kernel sets with randomised weights
         private void randomiseKernel()
         {
             Random rand = new Random();
