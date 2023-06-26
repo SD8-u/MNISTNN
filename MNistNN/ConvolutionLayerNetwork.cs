@@ -13,6 +13,7 @@ namespace MNistNN
         List<double[,,,]> kernels; 
         List<double[,,]> activation;
         List<double[,,]> bias;
+        List<double[,,]> map;
         bool[] convPoolConfig;
 
         //NOTE: kernel sets must be same depth as input 
@@ -24,12 +25,15 @@ namespace MNistNN
             kernels = new List<double[,,,]>();
             activation = new List<double[,,]>();
             bias = new List<double[,,]>();
+            map = new List<double[,,]>();
             this.convPoolConfig = convPoolConfig;
 
             activation.Add(new double[iX, iY, iZ]);
             bias.Add(new double[iX, iY, iZ]);
+            map.Add(new double[iX, iY, iZ]);
 
             activation[0] = input;
+            map[0] = input;
 
             for (int i = 0; i < structure.GetLength(0); i++)
             {
@@ -41,8 +45,8 @@ namespace MNistNN
                 iZ = structure[i, 2];
 
                 activation.Add(new double[iX, iY, iZ]);
-
                 bias.Add(new double[iX, iY, iZ]);
+                map.Add(new double[iX, iY, iZ]);
             }
 
             //Bias Randomisation
@@ -71,6 +75,9 @@ namespace MNistNN
                             kernels[i - 1], activation[i - 1]);
                             sum(k, 0, activation[i], conv);
                         }
+                        //Store weighted feature input map before activ func
+                        sum(k, k, map[i], activation[i]);
+
                         //Apply bias and activation to layer
                         sum(k, k, activation[i], bias[i], true);
                     }
@@ -113,11 +120,27 @@ namespace MNistNN
         //Backpropagation in convolutional layers
         public void Backpropagate(double[] error)
         {
-            for(int i = layers - 1; i > 0; i--)
+            //Input feature map partial derivatives
+            double[,,] dInput = new double[activation[layers - 1].GetLength(0),
+            activation[layers - 1].GetLength(1), activation[layers - 1].GetLength(2)];
+
+            //Reverse flatten first layer of dense network
+            int count = 0;
+            for(int x = 0; x < dInput.GetLength(1); x++)
+            {
+                for(int y = 0; y < dInput.GetLength(2); y++)
+                {
+                    dInput[0, x, y] = error[count];
+                    count++;
+                }
+            }
+            
+            for (int i = layers - 1; i > 0; i--)
             {
                 //Convolutional layer
                 if (convPoolConfig[i - 1])
                 {
+
                     //Compute weights in each kernel set
                     for(int a = 0; a < kernels[i].GetLength(0); a++)
                     {
@@ -127,13 +150,14 @@ namespace MNistNN
                             {
                                 for(int d = 0; d < kernels[i].GetLength(3); d++)
                                 {
-                                    //Perform summation over output feature map
+                                    //Perform summation over output errors
                                     double sum = 0;
                                     for(int e = 0; e < activation[i].GetLength(1); e++)
                                     {
                                         for(int f = 0; f < activation[i].GetLength(2); f++)
                                         {
-                                            sum += activation[i - 1][b, e + c, d + f]; //* dActiv
+                                            sum += activation[i - 1][b, e + c, f + d] *
+                                            dInput[a, e, f];
                                         }
                                     }
                                     kernels[i][a, b, c, d] -= sum; //*learnRate
@@ -141,6 +165,16 @@ namespace MNistNN
                             }
                         }
                     }
+                    //Compute activations in each feature map
+                    for(int a = 0; a < activation[i].GetLength(0); a++)
+                    {
+
+                    }
+                }
+                //Pooling layer
+                else
+                {
+
                 }
             }
         }
@@ -150,6 +184,14 @@ namespace MNistNN
         {
             return Math.Max(0, z);
             return 1 / (1 + Math.Pow(Math.E, z * -1));
+        }
+
+        //Derivative of activation function
+        private double dA(double a)
+        {
+            //return a * (1 - a);
+            if (a > 0) { return 1; }
+            return 0;
         }
 
         //Perform convolution of two matrices
