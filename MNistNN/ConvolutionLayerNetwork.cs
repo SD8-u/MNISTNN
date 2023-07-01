@@ -94,10 +94,12 @@ namespace MNistNN
         }
 
         //Max pooling function
-        private void maxPool(int i, int a)
+        private void maxPool(int i, int a, double[,,]? dMap=null, double[,,]? temp=null)
         {
             int k1 = kernels[i - 1].GetLength(2);
             int k2 = kernels[i - 1].GetLength(3);
+
+            //Iterate each region of input feature map
             for (int b = 0; b < activation[i - 1].GetLength(1)
             - (k1 - 1); b += k1 + 1)
             {
@@ -105,32 +107,111 @@ namespace MNistNN
                 - (k2 - 1); c += k2 + 1)
                 {
                     double max = Double.MinValue;
+                    int[] p = new int[2];
+
+                    //Determine max value in current region
                     for (int x = b; x < b + kernels[i - 1].GetLength(2); x++)
                     {
                         for (int y = c; y < c + kernels[i - 1].GetLength(3); y++)
                         {
-                            max = Math.Max(max, activation[i - 1][a, x, y]);
+                            if(activation[i - 1][a, x, y] > max)
+                            {
+                                p[0] = x; p[1] = y;
+                                max = activation[i - 1][a, x, y];
+                            }
                         }
                     }
-                    activation[i][a, b / (k1 + 1), c / (k2 + 1)] = max;
+                    //Backpropagation - derivatives through max pooling
+                    if(dMap != null && temp != null)
+                    {
+                        temp[a, p[0], p[1]] = dMap[a, b, c];
+                    }
+                    //Else feed forward
+                    else
+                    {
+                        activation[i][a, b / (k1 + 1), c / (k2 + 1)] = max;
+                    }
                 }
             }
+        }
+
+        private void weightAdjust(int i, double[,,] dMap)
+        {
+            //Compute weights in each kernel set
+            for (int a = 0; a < kernels[i].GetLength(0); a++)
+            {
+                for (int b = 0; b < kernels[i].GetLength(1); b++)
+                {
+                    for (int c = 0; c < kernels[i].GetLength(2); c++)
+                    {
+                        for (int d = 0; d < kernels[i].GetLength(3); d++)
+                        {
+                            //Perform summation over output errors
+                            double sum = 0;
+                            for (int e = 0; e < activation[i].GetLength(1); e++)
+                            {
+                                for (int f = 0; f < activation[i].GetLength(2); f++)
+                                {
+                                    sum += activation[i - 1][b, e + c, f + d] *
+                                    dMap[a, e, f];
+                                }
+                            }
+                            kernels[i][a, b, c, d] -= sum; //*learnRate
+                        }
+                    }
+                }
+            }
+        }
+
+        private void biasAdjust(int i, double[,,] dMap)
+        {
+            double[,,] temp = new double[activation[i - 1].GetLength(0),
+            activation[i - 1].GetLength(1), activation[i - 1].GetLength(2)];
+
+            //Compute feature map derivatives and bias adjustment
+            for (int a = 0; a < activation[i - 1].GetLength(0); a++)
+            {
+                for (int b = 0; b < activation[i - 1].GetLength(1); b++)
+                {
+                    for (int c = 0; c < activation[i - 1].GetLength(2); c++)
+                    {
+                        double sum = 0;
+                        int k1 = kernels[i - 1].GetLength(2) - 1;
+                        int k2 = kernels[i - 1].GetLength(3) - 1;
+                        for (int x = 0; x < kernels[i - 1].GetLength(0); x++)
+                        {
+                            for (int z = k1; z >= b; z--)
+                            {
+                                for (int w = k2; w >= c; w--)
+                                {
+                                    sum += dMap[x, z, w] *
+                                    kernels[i - 1][x, a, k1 - z, k2 - w] *
+                                    dA(map[i - 1][a, b, c]);
+                                }
+                            }
+                        }
+                        temp[a, b, c] = sum;
+                        bias[i - 1][a, b, c] -= sum; //*learnRate
+                    }
+                }
+            }
+            dMap = temp;
         }
 
         //Backpropagation in convolutional layers
         public void Backpropagate(double[] error)
         {
-            //Input feature map partial derivatives
-            double[,,] dInput = new double[activation[layers - 1].GetLength(0),
+            //Feature map partial derivatives
+            double[,,] dMap = new double[activation[layers - 1].GetLength(0),
             activation[layers - 1].GetLength(1), activation[layers - 1].GetLength(2)];
 
-            //Reverse flatten first layer of dense network
+            //Reverse flatten input layer of dense network
             int count = 0;
-            for(int x = 0; x < dInput.GetLength(1); x++)
+            for(int x = 0; x < dMap.GetLength(1); x++)
             {
-                for(int y = 0; y < dInput.GetLength(2); y++)
+                for(int y = 0; y < dMap.GetLength(2); y++)
                 {
-                    dInput[0, x, y] = error[count];
+                    dMap[0, x, y] = error[count];
                     count++;
                 }
             }
@@ -140,43 +221,42 @@ namespace MNistNN
                 //Convolutional layer
                 if (convPoolConfig[i - 1])
                 {
+                    //Adjust weights
+                    weightAdjust(i, dMap);
 
-                    //Compute weights in each kernel set
-                    for(int a = 0; a < kernels[i].GetLength(0); a++)
-                    {
-                        for(int b = 0; b < kernels[i].GetLength(1); b++)
-                        {
-                            for(int c = 0; c < kernels[i].GetLength(2); c++)
-                            {
-                                for(int d = 0; d < kernels[i].GetLength(3); d++)
-                                {
-                                    //Perform summation over output errors
-                                    double sum = 0;
-                                    for(int e = 0; e < activation[i].GetLength(1); e++)
-                                    {
-                                        for(int f = 0; f < activation[i].GetLength(2); f++)
-                                        {
-                                            sum += activation[i - 1][b, e + c, f + d] *
-                                            dInput[a, e, f];
-                                        }
-                                    }
-                                    kernels[i][a, b, c, d] -= sum; //*learnRate
-                                }
-                            }
-                        }
-                    }
-                    //Compute activations in each feature map
-                    for(int a = 0; a < activation[i].GetLength(0); a++)
-                    {
-
-                    }
+                    //Adjust bias
+                    biasAdjust(i, dMap);
                 }
                 //Pooling layer
                 else
                 {
+                    double[,,] temp = new double[activation[i - 1].GetLength(0),
+                    activation[i - 1].GetLength(1), activation[i - 1].GetLength(2)];
 
+                    for(int a = 0; a < activation[i - 1].GetLength(0); a++)
+                    {
+                        maxPool(i, a, dMap, temp);
+                    }
                 }
             }
+        }
+
+        //Flatten and return final layer
+        public double[] GetOutput()
+        {
+            double[] output = new double[activation[layers - 1].GetLength(1) *
+            activation[layers - 1].GetLength(2)];
+
+            int count = 0;
+            for (int x = 0; x < activation[layers - 1].GetLength(1); x++)
+            {
+                for (int y = 0; y < activation[layers - 1].GetLength(2); y++)
+                {
+                    output[count] = activation[layers - 1][0, x, y];
+                    count++;
+                }
+            }
+            return output;
         }
 
         //Activation function
