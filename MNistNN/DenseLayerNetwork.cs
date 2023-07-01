@@ -26,7 +26,7 @@ namespace MNistNN
             layers = structure.Length;
 
             //Node Bias initialisation
-            foreach(int layerWidth in structure)
+            foreach (int layerWidth in structure)
             {
                 activation.Add(new double[layerWidth]);
                 bias.Add(new double[layerWidth]);
@@ -67,6 +67,8 @@ namespace MNistNN
                     }
                 }
             }
+
+            inputError = new double[activation[0].Length];
         }
 
         //Activation function
@@ -201,7 +203,6 @@ namespace MNistNN
             double[] expected;
             List<double[]> errorBias = new List<double[]>();
             List<double[,]> errorWeight = new List<double[,]>();
-            inputError = new double[activation[0].Length];
 
             foreach (double[] layer in activation)
             {

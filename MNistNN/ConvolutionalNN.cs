@@ -6,7 +6,12 @@ using System.Threading.Tasks;
 
 namespace MNistNN
 {
-    internal class ConvolutionalNeuralNetwork
+    internal class ConvolutionalNN
     {
+        DenseLayerNetwork denseNet;
+        ConvolutionLayerNetwork convolvedNet;
+        public ConvolutionalNN()
+        {
+        }
     }
 }
